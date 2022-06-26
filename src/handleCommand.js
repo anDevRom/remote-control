@@ -1,4 +1,5 @@
 import robot from 'robotjs';
+import Jimp from 'jimp';
  
 export const handleCommand = (ws, command) => {
   const [commandName, ...argsOfCommand] = command.split(' ');
@@ -118,5 +119,28 @@ export const handleCommand = (ws, command) => {
     robot.mouseToggle('up')
     ws.send(commandName);
     return;
+  }
+
+  if (commandName === 'prnt_scrn') {
+    return new Promise(res => {
+      const capturedScreen = robot.screen
+      .capture(currentXPos - 100, currentYPos, 200, 200);
+
+      const image = new Jimp(capturedScreen.width, capturedScreen.height);
+      let pos = 0;
+      image.scan(0, 0, image.bitmap.width, image.bitmap.height, (x, y, idx) => {
+        image.bitmap.data[idx + 2] = capturedScreen.image.readUInt8(pos++);
+        image.bitmap.data[idx + 1] = capturedScreen.image.readUInt8(pos++);
+        image.bitmap.data[idx + 0] = capturedScreen.image.readUInt8(pos++);
+        image.bitmap.data[idx + 3] = capturedScreen.image.readUInt8(pos++);
+      });
+
+      return image
+        .getBase64Async(Jimp.MIME_PNG)
+        .then((imgStr) => {
+          ws.send(`${commandName} ${imgStr.replace('data:image/png;base64,', '')}`);
+          res();
+        });
+    })
   }
 };
