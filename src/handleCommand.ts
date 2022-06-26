@@ -1,7 +1,8 @@
-import robot from 'robotjs';
-import Jimp from 'jimp';
+import * as robot from 'robotjs';
+import * as Jimp from 'jimp';
+import { WebSocket } from 'ws';
  
-export const handleCommand = (ws, command) => {
+export const handleCommand = (ws: WebSocket, command: string) => {
   const [commandName, ...argsOfCommand] = command.split(' ');
   const { 
     x: currentXPos, 
@@ -16,7 +17,7 @@ export const handleCommand = (ws, command) => {
   if (commandName === 'mouse_up') {
     const [moveY] = argsOfCommand;
 
-    robot.moveMouseSmooth(currentXPos, currentYPos - moveY);
+    robot.moveMouseSmooth(currentXPos, currentYPos - Number(moveY));
     ws.send(commandName);
     return;
   }
@@ -32,7 +33,7 @@ export const handleCommand = (ws, command) => {
   if (commandName === 'mouse_left') {
     const [moveX] = argsOfCommand;
 
-    robot.moveMouseSmooth(currentXPos - moveX, currentYPos);
+    robot.moveMouseSmooth(currentXPos - Number(moveX), currentYPos);
     ws.send(commandName);
     return;
   }
@@ -49,8 +50,8 @@ export const handleCommand = (ws, command) => {
     const [radius] = argsOfCommand;
     
     for (let i = 0; i <= Math.PI * 2; i += 0.01) {
-      const x = currentXPos - radius + (radius * Math.cos(i));
-      const y = currentYPos + (radius * Math.sin(i));
+      const x = currentXPos - Number(radius) + (Number(radius) * Math.cos(i));
+      const y = currentYPos + (Number(radius) * Math.sin(i));
       
       robot.dragMouse(x, y);
       robot.mouseToggle('down');
@@ -69,7 +70,7 @@ export const handleCommand = (ws, command) => {
 
     for (let i = 1; i <= 4; ++i) {
       if (i % 2 === 0) {
-        for (let j = 0; j <= width; ++j) {
+        for (let j = 0; j <= Number(width); ++j) {
           robot.dragMouse(x, y);
           robot.mouseToggle('down');
           if (i === 2) x = currentXPos - j;
@@ -77,7 +78,7 @@ export const handleCommand = (ws, command) => {
         }
       }
       if (i % 2 !== 0) {
-        for (let j = 0; j <= height; ++j) {
+        for (let j = 0; j <= Number(height); ++j) {
           robot.dragMouse(x, y);
           robot.mouseToggle('down');
           if (i === 1) y = currentYPos + j;
@@ -99,7 +100,7 @@ export const handleCommand = (ws, command) => {
 
     for (let i = 1; i <= 4; ++i) {
       if (i % 2 === 0) {
-        for (let j = 0; j <= width; ++j) {
+        for (let j = 0; j <= Number(width); ++j) {
           robot.dragMouse(x, y);
           robot.mouseToggle('down');
           if (i === 2) x = currentXPos - j;
@@ -107,7 +108,7 @@ export const handleCommand = (ws, command) => {
         }
       }
       if (i % 2 !== 0) {
-        for (let j = 0; j <= width; ++j) {
+        for (let j = 0; j <= Number(width); ++j) {
           robot.dragMouse(x, y);
           robot.mouseToggle('down');
           if (i === 1) y = currentYPos + j;
@@ -139,7 +140,7 @@ export const handleCommand = (ws, command) => {
         .getBase64Async(Jimp.MIME_PNG)
         .then((imgStr) => {
           ws.send(`${commandName} ${imgStr.replace('data:image/png;base64,', '')}`);
-          res();
+          res(null);
         });
     })
   }
